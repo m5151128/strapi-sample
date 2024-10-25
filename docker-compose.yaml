@@ -1,0 +1,38 @@
+version: "3"
+services:
+  strapi-app:
+    image: node:20.18
+    working_dir: /usr/src/app
+    env_file:
+      - ./strapi-app/.env
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./strapi-app:/usr/src/app
+    depends_on:
+      - strapi-db
+    entrypoint:
+      - sh
+    command:
+      - -c
+      - |
+        yarn install
+        yarn develop
+    tty: true
+
+  strapi-db:
+    image: mysql:8.0.39
+    restart: always
+    environment:
+      MYSQL_PORT: 3306
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_DATABASE: strapi
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      TZ: ${TZ:-Asia/Tokyo}
+    volumes:
+      - ./docker/strapi-db/data:/var/lib/mysql
+      - ./docker/strapi-db/settings/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./docker/strapi-db/settings/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
